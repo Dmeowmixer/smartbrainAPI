@@ -1,4 +1,4 @@
-const handleRegister = (req, res, db, bCrypt) => {
+const handleRegister = (req, res, db, bcrypt) => {
   const {email, name, password} = req.body;
   //bCrypt password hash
   if(!email || !name || !password){
@@ -28,7 +28,7 @@ const handleRegister = (req, res, db, bCrypt) => {
     .catch(trx.rollback)
   })
 
-      .catch(err => res.status(400).json('unable to register'))
+    .catch(err => res.status(400).json('unable to register'))
   }
 
   module.exports = {
