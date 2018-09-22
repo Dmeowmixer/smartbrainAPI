@@ -2,119 +2,44 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
+const knex = require('knex');
+
+const register = require('./controller/register');
+const signin = require('./controller/signin');
+const profile = require('./controller/profile');
+const image = require('./controller/image');
+
+const db = knex({
+  client: 'pg',
+  connection: {
+    port: '5432',
+    host: '127.0.0.1',
+    user: 'postgres',
+    password: 'postgres',
+    database: 'smartbrain'
+  }
+});
+
 const app = express();
 
-app.use(bodyParser.json());
 app.use(cors());
-
-const database = {
-  users: [
-    {
-      id: '123',
-      name: 'john',
-      email: 'john@gmail.com',
-      password: 'cookies',
-      entries: 0,
-      joined: new Date()
-    },
-    {
-      id: '124',
-      name: 'Sally',
-      email: 'Sally@gmail.com',
-      password: 'bananna',
-      entries: 0,
-      joined: new Date()
-    }
-  ]
-}
+app.use(bodyParser.json());
 
 
+app.get('/', (req, res)=>{ res.send(database.users) })
 
-app.get('/', (req, res)=>{
-  res.send(database.users)
-})
+app.post('/signin', (req,res) => {signin.handleSignIn(req,res,db,bcrypt)})
 
+app.post('/register',(req,res) => { register.handleRegister(req,res,db,bcrypt) })
 
-app.post('/signin', (req,res) => {
+app.get('/profile/:id', (req,res) => {register.handleProfileGet(req,res,db)})
 
-  if (req.body.email === database.users[0].email && req.body.password === database.users[0].password) {
-    res.json(database.users[0]);
-  }else{
-    console.log(database.users[0].email, database.users[0].password)
-    res.status(400).json('error logging in');
-  }
-})
+app.put('/image', (req,res) => {image.handleImage(req,res,db)})
 
-app.post('/register', (req, res) => {
-  const {email, name, password} = req.body
-  // bcrypt.hash(password, null,null, function(err,hash){
-  //   console.log(hash)
-  // })
-  database.users.push({
-      id: '125',
-      name: name,
-      email: email,
-      entries: 0,
-      joined: new Date()
-    })
-  res.json(database.users[database.users.length-1])
-})
-
-app.get('/profile/:id', (req, res) => {
-  const {id} = req.params;
-  const found = false;
-  database.users.forEach(user => {
-    if(user.id === id){
-      found = true;
-      return res.json(user)
-    }
-  })
-  if(!found){
-    res.status(400).json('not fonuded')
-  }
-})
-
-app.put('/image', (req, res) => {
-  const {id} = req.body;
-  let found = false;
-  database.users.forEach(user=> {
-    if(user.id === id){
-      found = true;
-      user.entries++;
-      return res.json(user.entries);
-    }
-  })
-  if(!found){
-    res.status(400).json('not found');
-  }
-})
-
-// bcrypt.hash("bacon", null, null, function(err, hash) {
-//     // Store hash in your password DB.
-// });
-
-// // Load hash from your password DB.
-// bcrypt.compare("bacon", hash, function(err, res) {
-//     // res == true
-// });
-// bcrypt.compare("veggies", hash, function(err, res) {
-//     // res = false
-// });
+app.post('imageurl', (req,res)=>{image.handleApiCall(req,res)})
 
 
 app.listen(3000, () => {
   console.log('working app on 3000');
 })
 
-/*
-
-root "/" = this is working
-
-/signin -> POST = success/fail
-/register -> POST = USER
-/profile/:userID -> GET = user
-/image -> PUT -> user
-
-
-
-*/
