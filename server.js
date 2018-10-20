@@ -9,6 +9,7 @@ const signin = require('./controller/signin');
 const profile = require('./controller/profile');
 const image = require('./controller/image');
 
+// Connection to SQL DB w/ environment variable set
 const db = knex({
   client: 'pg',
   connection: {
@@ -22,7 +23,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-
+// APIs
 app.get('/', (req, res)=>{ res.send('it is working') })
 
 app.post('/signin', signin.handleSignin(db,bcrypt))
@@ -35,7 +36,7 @@ app.put('/image', (req,res) => {image.handleImage(req,res,db)})
 
 app.post('/imageurl', (req,res)=>{image.handleApiCall(req,res)})
 
-
+// Checks for environment variable PORT available, defaults to 3000
 app.listen(process.env.PORT || 3000, () => {
   console.log(`app is running on port ${process.env.PORT}`);
 })
